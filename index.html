@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Divide and Conquer</title>
+    <script type="module" src="div_and_c.js"></script>
+    <!--<link rel="stylesheet" href="style.css">-->
+<style>
+body {
+  font-size: 14pt;
+  margin: 0.5em 3em 7em 3em;
+  line-height: 28pt;
+}
+h2 { border-left:0.5em solid black;padding-left:0.5em;}
+h3 { border-left:0.5em solid black;border-bottom:1px solid black; padding-left:0.5em;margin-top: 4rem; }
+h4 { border-left:0.3em solid black;padding-left:0.5em;margin-top: 4rem; }
+#info { height: 5rem; }
+#ai_box {
+  display: flex;
+  height: 5rem;
+}
+#board {
+  height: 4em;
+}
+#board_box {
+  height: 6em;
+}
+#player_box {
+  height: 5rem;
+}
+.ai_card{
+  color:black;
+  background-color: white;
+  display: inline-block;
+  vertical-align: middle;
+  font-family: monospace;
+  border-radius: 0.5rem;
+  border: 2px solid #333;
+  margin: 1rem 0.5rem 1rem 0.5rem;
+  width: 2rem;
+  height: 3rem;
+  text-align: center;
+}
+.player_card {
+  font-family: monospace;
+  border-radius: 0.5rem;
+  border: 2px solid #333;
+  margin: 1rem 0.5rem 1rem 0.5rem;
+  width: 2rem;
+  height: 3rem;
+  text-align: center;
+}
+</style>
+  </head>
+  <body>
+    <div style="background: forestgreen;padding: 1em;color:white;border-radius:1em;">
+      <div id="ai_box"><br></div>
+      <div id="board_box">
+        <div id="board"></div>
+        <div id="msg_view"></div>
+      </div>
+      <div id="player_box"></div>
+      <div id="info">
+        <div id="score_view"></div>
+        <div id="next_menu"></div>
+        <div id="start_menu"></div>
+      </div>
+    </div>
+<br>
+<h2>分割統治</h2>
+　分割統治（Divide and Conquer）はトランプによるカイジ的な限定ジャンケンです。シド・サクソン氏の著作「Card Games Around The World」に掲載されているゲームで、Claud Soucie氏によって作られました。<br><br>
+　ルールは <a href="https://gamefarm.jp/rule/divideand.html">ゲームファーム</a> および <a href="http://fukuchigames.blog43.fc2.com/blog-entry-50.html">世界遊戯倶楽部『思宴会』</a> の記事を参考にしています。
+<h3>ゲームの目的</h3>
+　カードを使った数字比べのじゃんけんを前半戦と後半戦の合わせて最大で１０回行い、先に６勝することです。５勝ずつなら引き分けです。
+<h3>使う道具</h3>
+　トランプの適当なスート（マーク）から　２，３，４，５，６，７，８，９，10、そしてＱを抜き出して使います。利用するのは全部で１０枚きりです。Ａ、Ｊ、Ｋを含めた他のカードは使いません。<br>
+　例えばハートを使うことにするなら、利用するのは♥２〜♥10と♥Ｑの、たった<b>１０枚だけ</b>ということです。カウンティングは極めて容易です。<br><br>
+　それぞれのカードには数値があります：
+<ul>
+  <li>２から10……書かれた数字通りの数です。</li>
+  <li>Ｑ……１２を表します。</li>
+</ul>
+　スートに意味の無いゲームなので、ゲーム画面にスートは表示されません。
+<h3>ディール</h3>
+　２人のプレイヤーに５枚ずつ配ります。ここで最初に配られた手札は、後半戦で相手の手札になります。ゲーム画面では、リストに表示されているＣＯＭプレイヤーから適当にひとりを選んで Start ボタンを押せば手札が配られます。<br>
+　ところで、全部で１０枚しかない山札のうち自分が持っていない手札は必ず相手が持っているので、このゲームでは手札を隠す意味がありません。よってゲーム画面では、ＣＯＭの手札は常に公開されています。
+<h3>プレイ（手札でジャンケンをする）</h3>
+　手札から好きな１枚を選び、お互にいっせーのせで公開します。<br>
+　ページの一番上にあるゲーム画面では、あなたがボタンをクリックした瞬間、ＣＯＭが適当に自分の手札を選ぶようになっています。<br>
+　<small>※ＣＯＭは決して不正をしません。ＣＰＵは、あなたが選んだ手札をまったく知らない状態で自分の手札を選択しています。</small><br>
+<br>
+　お互いに手札を出したら、次のルールで勝敗を決めます。
+<ol>
+  <li><b>出された手札のランク差が１なら、小さいカードを出したほうの勝ち。</b><br>
+例１：出されたのが５と６なら、差がちょうど１になるから５の勝ちになります。<br>
+例２：出されたのが５と７なら、差は２になるので後述のルール３で処理します。</li>
+  <li><b>出された手札のうち大きい方を小さい方で割った余りが０なら、小さいほうの勝ち。</b><br>
+例１：出されたのがＱと２なら、２は１２を割り切れるので２の勝ちになります。<br>
+例２：出されたのがＱと７なら、７は１２を割り切れないため次に述べるルール３で処理します。</li>
+  <li><b>上記のどちらでもなければ数値の大きいカードを出したほうの勝ち。</b><br>
+例：出されたのが５とＱなら、差は１ではないし、１２は５で割り切れないため、１２の勝ちです。</li>
+</ol>
+　基本的に<b>ランクの大きいカードが強い</b>のですが、差が１だったり割り切れる時はカードの強さが逆転するということです。<br><br>
+　相手が次に、なにを出すのか——「分割統治」は対戦相手の腹を探り合う心理のゲームです。
+<h3>後半戦</h3>
+　上記のように５回プレイすると手札が無くなり、前半戦が終了になります。お互いに前半戦で使った５枚の手札を交換し、同じように後半戦を始めます。<br>
+　手札の運で前半戦に苦しんだとしても、後半戦ではあなたを苦しめた敵の手札があなたのものになるということです。しかも相手が使わなければならない手札は、前半戦でクソ雑魚だったあなたの手札です！<br>
+　ということは、前半戦であなたを苦しめた相手と同じ順番で手札を出せば後半戦では圧勝できそうに思えますが……？
+<h3>ゲームの勝敗</h3>
+　後半戦の中で、先に通算６回勝利したプレイヤーが勝者になります。最後まで決着がつかなかった場合（５ｖｓ５で終わった場合）は引き分けです。
+<h4>新しいゲーム</h4>
+　ひとつの勝負が終わるとゲーム画面下部に「RESTART」ボタンが表示されます。数種類あるＣＯＭプレイヤーは、Ａｈｏは名前の通り乱数でカードを選択するだけですが、それ以外はそこそこ考えた手を打ちます。<br><br><br>
+<center><a href="https://github.com/hoeg1">&lt;&lt; github/hoeg1</a><br></center>
+<div style="text-align:right">
+  License: MIT
+</div>
+  </body>
+</html>
+
+
